@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+#create Makefile for sample C++ projects consisting of several files
+#создаёт Makefile для маленьких проектов из нескольких файлов
+#все компилируемые файлы должны лежать в одной директории (обход в глубь
+#возможно добавлю позже, а возможно и нет)
+if ARGV[0] == "-h" || ARGV[0] == "--help"
+    puts "\n\s first ARGV should be programm name.
+    \n\sУтилита авоматически создаёт Makefile для небольших
+    C++ проектов из нескольких файлов. Собираемые файлы должны
+    находиться в одной директории.\n\sУтилита принимает 1 аргумент -
+    название скомпилированного файла, который вы хотите получить
+    на выходе. Например, $ makec my_programm_name.\n
+    Рекомендуется положить скрипт в /home/bin или любую другую
+    директорию указанную как исполняемую в вашей среде (env)
+    и вызывать из директории с исходными файлами вашего проекта.\n\n"
+    abort
+end
+programm = ARGV[0]
+if(programm == nil)
+    programm = "programm"
+end
+compile = "g++ -std=c++11"
+pwd = Dir.pwd
+p pwd
+#list = Dir.entries(pwd)
+files=[];
+count = 0
+Dir.foreach(pwd) do |fname|
+    if(fname =~ /.cpp/)
+        files << fname.split(/\..+/)
+        count +=1
+    end
+    
+    if(fname == "Makefile")
+        abort "Уже есть Makefile"
+    end
+    
+   end
+if(count == 0)
+    abort "Исходных файлов не обнаружено. Отмена"
+end
+files.flatten!
+makefile = File.new("Makefile", "w")
+$stdout = makefile
+puts "all: #{programm}"
+    print "#{programm}: "
+    files.each { |x| print x+".o "}
+    print "\n\t#{compile} " 
+    files.each { |x| print x+".o " }
+    print" -o #{programm}\n"
+i=0
+while(i < files.size) do
+    puts "#{files[i]}.o: #{files[i]}.cpp"
+    puts "\t #{compile} -c #{files[i]}.cpp"
+    i+=1
+  end
+puts "clean:\n\trm -f *.o #{programm}"
+$stdout = STDOUT
+makefile.close
+puts "OK"
+
+
+
+
+
